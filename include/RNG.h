@@ -15,6 +15,9 @@ typedef struct {
     int state;
 } RNG;
 
-void initRandomGenerator(RNG* rng, int seed);
-int getRandomInt(RNG* rng, int max);
-double getRandomDouble(RNG* rng);
+void initRandomGenerator(RNG *rng, int seed);
+int getRandomInt(RNG *rng, int max);
+double getRandomDouble(RNG *rng);
+
+
+#endif
