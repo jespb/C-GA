@@ -18,5 +18,5 @@ int getRandomInt(RNG *rng, int max){
 // Function to generate a random float in the range [0, 1)
 double getRandomDouble(RNG* rng) {
     // Convert the random integer to a float in the range [0, 1)
-    return getRandomNumber(rng) / (double)UINT32_MAX;
+    return getRandomInt(rng, UINT32_MAX) / (double)UINT32_MAX;
 }

@@ -50,8 +50,8 @@ double getAccuracy(Individual *ind, double **X, double *Y, int n_samples);
 double getRMSE(Individual *ind,     double **X, double *Y, int n_samples);
 
 double individual_predict(Individual *ind, double *sample);
-void individual_predict_regression(Individual *ind, double **X, int n_samples, double prediction[]);
-void individual_predict_classification(Individual *ind, double **X, int n_samples, int prediction[]);
+void individual_predict_regression(Individual *ind, double **X, int n_samples, double predictions[]);
+void individual_predict_classification(Individual *ind, double **X, int n_samples, int predictions[]);
 
 char *individual_toString(Individual *ind);
 

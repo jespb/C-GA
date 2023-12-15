@@ -1,0 +1,6 @@
+# Does not track the default folder for the results
+results/*
+obj/*
+
+exec_GA
+exec_GA_test

@@ -146,9 +146,12 @@ int main(int argc, char *argv[]) {
   double **dataset, **Tr_X, **Te_X;
   double *Tr_Y, *Te_Y;
 
+  printf("A");
 
   initArguments();
+  printf("A");
   updateArguments(argc, argv);
+  printf("A");
 
   dir = calloc((strlen(DATASETS_DIR) + strlen(DATASETS[0]) + 1), sizeof(char));
   strcat(dir, DATASETS_DIR);
@@ -166,8 +169,6 @@ int main(int argc, char *argv[]) {
   n_samples = getDatasetLength(dir, header);
 
   fclose(file);
-
-  models = calloc(RUNS + 1, sizeof(struct GA_t *));
 
   for (run = 0; run < RUNS; run++) {
     printf("\n\n\n---> RUN %2d <---\n", run);
@@ -192,10 +193,10 @@ int main(int argc, char *argv[]) {
 
     model =
         ga_create(terminals, n_terminals, POPULATION_SIZE, MAX_GENERATION, ELITISM_SIZE, 
-                  THREADS, VERBOSE, Tr_samples, Tr_X, Tr_Y, Te_samples, Te_X, Te_Y);
+                  THREADS, VERBOSE, Tr_X, Tr_Y, Tr_samples, Te_X, Te_Y, Te_samples);
 
 
-    fit(model);
+    fit(&model);
 
 
     // GA_destroy(model);
@@ -214,7 +215,7 @@ int main(int argc, char *argv[]) {
     free(Te_Y);
 
     printf("RUN %d: MODEL#ID: %f\n", run,
-           models[run]->testAccuracyOverTime[10]);
+           models[run].testAccuracyOverTime[10]);
   }
 
 
@@ -244,7 +245,7 @@ int main(int argc, char *argv[]) {
     sprintf(buff, "Training-Accuracy,%d,", run);
     fputs(buff, out);
     for (i = 0; i < MAX_GENERATION; ++i) {
-      sprintf(buff, "%f,", models[run]->trainingAccuracyOverTime[i]);
+      sprintf(buff, "%f,", models[run].trainingAccuracyOverTime[i]);
       fputs(buff, out);
     }
     fputs("\n", out);
@@ -256,55 +257,7 @@ int main(int argc, char *argv[]) {
     sprintf(buff, "Test-Accuracy,%d,", run);
     fputs(buff, out);
     for (i = 0; i < MAX_GENERATION; ++i) {
-      sprintf(buff, "%f,", models[run]->testAccuracyOverTime[i]);
-      fputs(buff, out);
-    }
-    fputs("\n", out);
-  }
-  fputs("\n", out);
-
-  printf("OUTPUT TR-WaF...\n");
-  for (run = 0; run < RUNS; run++) {
-    sprintf(buff, "Training-WaF,%d,", run);
-    fputs(buff, out);
-    for (i = 0; i < MAX_GENERATION; ++i) {
-      sprintf(buff, "%f,", models[run]->trainingWaFOverTime[i]);
-      fputs(buff, out);
-    }
-    fputs("\n", out);
-  }
-  fputs("\n", out);
-
-  printf("OUTPUT TE-WaF...\n");
-  for (run = 0; run < RUNS; run++) {
-    sprintf(buff, "Test-WaF,%d,", run);
-    fputs(buff, out);
-    for (i = 0; i < MAX_GENERATION; ++i) {
-      sprintf(buff, "%f,", models[run]->testWaFOverTime[i]);
-      fputs(buff, out);
-    }
-    fputs("\n", out);
-  }
-  fputs("\n", out);
-
-  printf("OUTPUT TR-Kappa...\n");
-  for (run = 0; run < RUNS; run++) {
-    sprintf(buff, "Training-Kappa,%d,", run);
-    fputs(buff, out);
-    for (i = 0; i < MAX_GENERATION; ++i) {
-      sprintf(buff, "%f,", models[run]->trainingKappaOverTime[i]);
-      fputs(buff, out);
-    }
-    fputs("\n", out);
-  }
-  fputs("\n", out);
-
-  printf("OUTPUT TE-Kappa...\n");
-  for (run = 0; run < RUNS; run++) {
-    sprintf(buff, "Test-Kappa,%d,", run);
-    fputs(buff, out);
-    for (i = 0; i < MAX_GENERATION; ++i) {
-      sprintf(buff, "%f,", models[run]->testKappaOverTime[i]);
+      sprintf(buff, "%f,", models[run].testAccuracyOverTime[i]);
       fputs(buff, out);
     }
     fputs("\n", out);
@@ -316,7 +269,7 @@ int main(int argc, char *argv[]) {
     sprintf(buff, "Training-RMSE,%d,", run);
     fputs(buff, out);
     for (i = 0; i < MAX_GENERATION; ++i) {
-      sprintf(buff, "%f,", models[run]->trainingRMSEOverTime[i]);
+      sprintf(buff, "%f,", models[run].trainingRMSEOverTime[i]);
       fputs(buff, out);
     }
     fputs("\n", out);
@@ -328,7 +281,7 @@ int main(int argc, char *argv[]) {
     sprintf(buff, "Test-RMSE,%d,", run);
     fputs(buff, out);
     for (i = 0; i < MAX_GENERATION; ++i) {
-      sprintf(buff, "%f,", models[run]->testRMSEOverTime[i]);
+      sprintf(buff, "%f,", models[run].testRMSEOverTime[i]);
       fputs(buff, out);
     }
     fputs("\n", out);
@@ -340,19 +293,7 @@ int main(int argc, char *argv[]) {
     sprintf(buff, "Fitness,%d,", run);
     fputs(buff, out);
     for (i = 0; i < MAX_GENERATION; ++i) {
-      sprintf(buff, "%f,", models[run]->fitnessOverTime[i]);
-      fputs(buff, out);
-    }
-    fputs("\n", out);
-  }
-  fputs("\n", out);
-
-  printf("OUTPUT SIZE...\n");
-  for (run = 0; run < RUNS; run++) {
-    sprintf(buff, "Size,%d,", run);
-    fputs(buff, out);
-    for (i = 0; i < MAX_GENERATION; ++i) {
-      sprintf(buff, "%d,", models[run]->sizeOverTime[i]);
+      sprintf(buff, "%f,", models[run].fitnessOverTime[i]);
       fputs(buff, out);
     }
     fputs("\n", out);
@@ -364,7 +305,7 @@ int main(int argc, char *argv[]) {
     sprintf(buff, "Time,%d,", run);
     fputs(buff, out);
     for (i = 0; i < MAX_GENERATION; ++i) {
-      sprintf(buff, "%f,", models[run]->timeOverTime[i]);
+      sprintf(buff, "%f,", models[run].timeOverTime[i]);
       fputs(buff, out);
     }
     fputs("\n", out);
@@ -375,7 +316,7 @@ int main(int argc, char *argv[]) {
   for (run = 0; run < RUNS; run++) {
     sprintf(buff, "Final_Model,%d,", run);
     fputs(buff, out);
-    ind_str = toString_individual(models[run]->bestIndividual);
+    ind_str = individual_toString(&models[run].bestIndividual);
     sprintf(buff, "%s,\n", ind_str);
     free(ind_str);
     fputs(buff, out);
@@ -386,17 +327,11 @@ int main(int argc, char *argv[]) {
   fputs("\nParameters:\n", out);
   sprintf(buff, "Operators,['+', '-', '*', '/']\n");
   fputs(buff, out);
-  sprintf(buff, "Max Initial Depth,%d\n", MAX_DEPTH);
-  fputs(buff, out);
   sprintf(buff, "Population Size,%d\n", POPULATION_SIZE);
   fputs(buff, out);
   sprintf(buff, "Max Generation,%d\n", MAX_GENERATION);
   fputs(buff, out);
-  sprintf(buff, "Tournament Size,%d\n", TOURNAMENT_SIZE);
-  fputs(buff, out);
   sprintf(buff, "Elitism Size,%d\n", ELITISM_SIZE);
-  fputs(buff, out);
-  sprintf(buff, "Depth Limit,%d\n", LIMIT_DEPTH);
   fputs(buff, out);
   sprintf(buff, "Threads (not implemented),%d\n", THREADS);
   fputs(buff, out);
@@ -407,10 +342,9 @@ int main(int argc, char *argv[]) {
   free(dir);
 
   for (int run = 0; run < RUNS; run++) {
-    ga_destroy(models[run]);
+    ga_destroy(&models[run]);
   }
   string_array_destroy(terminals);
-  free(models);
 
   return 0;
 }
