@@ -16,6 +16,7 @@
 
 #include "arguments.c"
 
+
 int getArrayLength(char **c) {
   int l = 0;
 
@@ -133,26 +134,20 @@ double *getDatasetY(double **ds, int n_samples, int n_terminals, int isTraining)
 
 
 
+int main(int argc, char *argv[]){
+  initArguments();
+  updateArguments(argc, argv);
 
-
-int main(int argc, char *argv[]) {
   char *dir, *outname, *ind_str ;
   char **terminals;
   char str[1028], buff[2048];
   FILE *file, *out;
   int n_terminals, header, n_samples, run, Tr_samples, Te_samples, i;
   GA model;
-  GA models[100]; // enough room for 100 runs
   double **dataset, **Tr_X, **Te_X;
   double *Tr_Y, *Te_Y;
 
-  printf("A");
-
-  initArguments();
-  printf("A");
-  updateArguments(argc, argv);
-  printf("A");
-
+  GA models[RUNS]; 
   dir = calloc((strlen(DATASETS_DIR) + strlen(DATASETS[0]) + 1), sizeof(char));
   strcat(dir, DATASETS_DIR);
   strcat(dir, DATASETS[0]);
@@ -169,6 +164,7 @@ int main(int argc, char *argv[]) {
   n_samples = getDatasetLength(dir, header);
 
   fclose(file);
+
 
   for (run = 0; run < RUNS; run++) {
     printf("\n\n\n---> RUN %2d <---\n", run);
@@ -191,10 +187,11 @@ int main(int argc, char *argv[]) {
     // --------------------------------------------  RUN
 
 
+
     model =
         ga_create(terminals, n_terminals, POPULATION_SIZE, MAX_GENERATION, ELITISM_SIZE, 
-                  THREADS, VERBOSE, Tr_X, Tr_Y, Tr_samples, Te_X, Te_Y, Te_samples);
-
+                  THREADS, VERBOSE, Tr_X, Tr_Y, Tr_samples, Te_X, Te_Y, Te_samples, run);
+/*
 
     fit(&model);
 
@@ -216,7 +213,20 @@ int main(int argc, char *argv[]) {
 
     printf("RUN %d: MODEL#ID: %f\n", run,
            models[run].testAccuracyOverTime[10]);
+  */
   }
+
+
+  return 0;
+}
+
+/*
+
+
+
+int main(int argc, char *argv[]) {
+
+
 
 
 
@@ -341,10 +351,10 @@ int main(int argc, char *argv[]) {
   freeArguments();
   free(dir);
 
-  for (int run = 0; run < RUNS; run++) {
-    ga_destroy(&models[run]);
-  }
   string_array_destroy(terminals);
 
   return 0;
 }
+
+*/
+

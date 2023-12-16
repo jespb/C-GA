@@ -16,13 +16,13 @@
 
 
 
-Individual roulette(RNG *rng, Individual population[], int p_size){
+Individual roulette(Individual population[], int p_size){
   double max = 0, select;
   int i;
   for(i = 0; i < p_size; i++){
     max += getFitness(&population[i], NULL, NULL, -1);
   }
-  select = getRandomDouble(rng)*max;
+  select = getRandomDouble()*max;
   i = -1;
   while(select >= 0){
     i += 1;
@@ -41,30 +41,30 @@ void getElite(Individual population[], int p_size, Individual elite[], int e_siz
 
 
 
-void getOffspring(RNG *rng, Individual population[], int p_size, Individual offspring[] ) {
-  int isCross = getRandomDouble(rng) < 0.7;
-  int isMut1 = getRandomDouble(rng) < 0.5;
-  int isMut2 = getRandomDouble(rng) < 0.5;
-  Individual parent1 = roulette(rng, population, p_size);
-  Individual parent2 = roulette(rng, population, p_size);
+void getOffspring(Individual population[], int p_size, Individual offspring[] ) {
+  int isCross = getRandomDouble() < 0.7;
+  int isMut1 = getRandomDouble() < 0.5;
+  int isMut2 = getRandomDouble() < 0.5;
+  Individual parent1 = roulette(population, p_size);
+  Individual parent2 = roulette(population, p_size);
 
   if (isCross){
-    STXO(rng, &parent1, &parent2);
+    STXO(&parent1, &parent2);
   }
   if (isMut1){
-    STMUT(rng, &parent1);
+    STMUT(&parent1);
   }
   if (isMut2){
-    STMUT(rng, &parent1);
+    STMUT(&parent1);
   }
 
   offspring[0] = parent1;
   offspring[1] = parent2;
 }
 
-void STXO(RNG *rng, Individual *parent1, Individual *parent2 ) {
+void STXO(Individual *parent1, Individual *parent2 ) {
 
-  int cut = getRandomInt(rng, parent1->n_weights);
+  int cut = getRandomInt(parent1->n_weights);
   int i;
   double ax;
 
@@ -76,15 +76,15 @@ void STXO(RNG *rng, Individual *parent1, Individual *parent2 ) {
   
 }
 
-void STMUT(RNG *rng, Individual *parent){
+void STMUT(Individual *parent){
 
   int i;
   double isFlip;
 
   for(i = 0; i < parent->n_weights; i++){
-    isFlip = getRandomDouble(rng) < 1/parent->n_weights;
+    isFlip = getRandomDouble() < 1/parent->n_weights;
     if (isFlip){
-      parent->weights[i] = getRandomDouble(rng);
+      parent->weights[i] = getRandomDouble();
     }
   }
 }

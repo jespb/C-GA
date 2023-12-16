@@ -12,6 +12,7 @@
 #define _GA_H
 
 #define MAX_GEN 1000
+#define MAX_POP 1000
 
 typedef struct {
 	int n_training_samples;
@@ -32,8 +33,8 @@ typedef struct {
 
 	int verbose;
 
-	Individual population[1000];
-	Individual bestIndividual;
+	Individual *population;
+	Individual *bestIndividual;
 
 	int currentGeneration;
 
@@ -43,15 +44,11 @@ typedef struct {
 	double testRMSEOverTime[MAX_GEN];
 	double fitnessOverTime[MAX_GEN];
 	double timeOverTime[MAX_GEN]; 
-
-	RNG rng;
 } GA;
 
 GA ga_create(char** terminals, int n_terminals, int population_size, int max_generation, 
 	int elitism_size, int threads, int verbose,	double **training_X, double *training_Y, 
-	int n_training_samples, double **test_X, double *test_Y, int n_test_samples);
-
-void ga_destroy(GA *GenAlg);
+	int n_training_samples, double **test_X, double *test_Y, int n_test_samples, int seed);
 
 char* toString_ga(GA *GenAlg);
 

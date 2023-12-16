@@ -18,11 +18,14 @@
 GA ga_create(char **terminals, int n_terminals, int population_size, int max_generation,
                              int elitism_size, int threads, int verbose,
                              double **training_X, double *training_Y, int n_training_samples, 
-                             double **test_X, double *test_Y, int n_test_samples) {
+                             double **test_X, double *test_Y, int n_test_samples, int seed) {
 
   GA ga;// = malloc(sizeof(GA));
 
-  initRandomGenerator(&ga.rng, 42); // seed 42
+  initRandomGenerator(seed);
+
+  ga.population = malloc(sizeof(Individual) * population_size);
+  ga.bestIndividual = malloc(sizeof(Individual));
 
   ga.n_training_samples = n_training_samples;
   ga.training_X = training_X;
@@ -54,36 +57,19 @@ GA ga_create(char **terminals, int n_terminals, int population_size, int max_gen
   //    malloc(sizeof(struct individual_t *) * (population_size + 1));
   
   for (int i = 0; i < population_size; ++i) {
-    ga.population[i] = individual_create(&(ga.rng), n_terminals);
+    ga.population[i] = individual_create(n_terminals);
   }
 
-  ga.bestIndividual = individual_clone(&(ga.population[0]));
+  *ga.bestIndividual = individual_clone(&ga.population[0]);
 
   return ga;
 }
 
-void ga_destroy(GA *ga) {
-  //free(ga->trainingAccuracyOverTime);
-  //free(ga->testAccuracyOverTime);
-  //free(ga->trainingRMSEOverTime);
-  //free(ga->testRMSEOverTime);
-  //free(ga->fitnessOverTime);
-  //free(ga->timeOverTime);
-
-  for (int i = 0; i < ga->population_size; i++) {
-    individual_destroy(&(ga->population[i]));
-  }
-  //free(ga->population);
-
-  individual_destroy(&(ga->bestIndividual));
-
-  free(ga);
-}
 
 int stoppingCriteria(GA *ga) {
   int genLimit = ga->currentGeneration >= ga->max_generation;
   int perfectTraining =
-      getFitness(&ga->bestIndividual, ga->training_X, ga->training_Y, ga->n_training_samples) == 1;
+      getFitness(ga->bestIndividual, ga->training_X, ga->training_Y, ga->n_training_samples) == 1;
 
   return genLimit || perfectTraining;
 }
@@ -116,19 +102,19 @@ void fit(GA *ga) {
     }
 
     ga->trainingAccuracyOverTime[ga->currentGeneration] =
-        getAccuracy(&ga->bestIndividual,
+        getAccuracy(ga->bestIndividual,
                     ga->training_X, ga->training_Y, ga->n_training_samples);
     ga->testAccuracyOverTime[ga->currentGeneration] =
-        getAccuracy(&ga->bestIndividual, ga->test_X,
+        getAccuracy(ga->bestIndividual, ga->test_X,
                     ga->test_Y, ga->n_test_samples);
     ga->trainingRMSEOverTime[ga->currentGeneration] =
-        getRMSE(&ga->bestIndividual,
+        getRMSE(ga->bestIndividual,
                 ga->training_X, ga->training_Y, ga->n_training_samples);
     ga->testRMSEOverTime[ga->currentGeneration] =
-        getRMSE(&ga->bestIndividual, ga->test_X,
+        getRMSE(ga->bestIndividual, ga->test_X,
                 ga->test_Y, ga->n_test_samples);
     ga->fitnessOverTime[ga->currentGeneration] =
-        getFitness(&ga->bestIndividual,
+        getFitness(ga->bestIndividual,
                    ga->training_X, ga->training_Y, ga->n_training_samples);
     ga->timeOverTime[ga->currentGeneration] = duration / 1000.0;
 
@@ -157,9 +143,8 @@ void nextGeneration(GA *ga) {
         sizeof(struct individual_t *), compare);
 
   // Updates the best individual
-  if (ga->population[0].fitness > ga->bestIndividual.fitness) {
-    individual_destroy(&ga->bestIndividual);
-    ga->bestIndividual = individual_clone(&ga->population[0]);
+  if (ga->population[0].fitness > ga->bestIndividual->fitness) {
+    *ga->bestIndividual = individual_clone(&ga->population[0]);
   }
 
   // Generates next generation
@@ -172,40 +157,37 @@ void nextGeneration(GA *ga) {
   }
 
   for (int i = ga->elitism_size; i < ga->population_size; i+=2) {
-    getOffspring(&ga->rng, ga->population, ga->population_size, offspring);
+    getOffspring(ga->population, ga->population_size, offspring);
     new_population[i]   = offspring[0];
     if (i+1 < ga->population_size){
       new_population[i+1] = offspring[1];
-    }else{
-      individual_destroy(&offspring[1]);
     }
   }
 
   // Deletes and replaces the previous generation
   for (int i = 0; i < ga->population_size; ++i) {
-    individual_destroy(&ga->population[i]);
     ga->population[i] = new_population[i];
   }
 
   // Generation Log
   if (ga->verbose && ga->currentGeneration % 1 == 0)
     printf("  > Training: %.4f  // Test: %.4f      ",
-           getAccuracy(&ga->bestIndividual, ga->training_X, ga->training_Y, ga->n_training_samples),
-           getAccuracy(&ga->bestIndividual, ga->test_X, ga->test_Y, ga->n_test_samples));
+           getAccuracy(ga->bestIndividual, ga->training_X, ga->training_Y, ga->n_training_samples),
+           getAccuracy(ga->bestIndividual, ga->test_X, ga->test_Y, ga->n_test_samples));
 }
 
 
 
 void predict_regression(GA *ga, int n_samples, double **x, double *prediction) {
-  individual_predict_regression(&ga->bestIndividual, x, n_samples, prediction);
+  individual_predict_regression(ga->bestIndividual, x, n_samples, prediction);
 }
 
 void predict_classification(GA *ga, int n_samples, double **x, int *prediction) {
-  individual_predict_classification(&ga->bestIndividual, x, n_samples, prediction);
+  individual_predict_classification(ga->bestIndividual, x, n_samples, prediction);
 }
 
 Individual *getBestIndividual(GA *ga) {
-  return &ga->bestIndividual;
+  return ga->bestIndividual;
 }
 
 double *getTrainingAccuracyOverTime(GA *ga) {
@@ -233,5 +215,5 @@ double *getTimeOverTime(GA *ga) {
 }
 
 char *toString_GA(GA *ga) {
-  return individual_toString(&ga->bestIndividual);
+  return individual_toString(ga->bestIndividual);
 }

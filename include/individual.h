@@ -6,8 +6,6 @@
 * Copyright ©2023 J. E. Batista
 */
 
-#include <RNG.h>
-
 #ifndef _INDIVIDUAL_H
 #define _INDIVIDUAL_H
 
@@ -20,11 +18,11 @@ typedef struct{
   int n_weights;
 
   double fitness;
-  char string[1000];
+  char string[1000*10];
 } Individual;
 
 
-Individual individual_create(RNG *rng, int n_weights);
+Individual individual_create(int n_weights);
 
 Individual individual_clone(Individual *ind);
 
@@ -55,7 +53,6 @@ void individual_predict_classification(Individual *ind, double **X, int n_sample
 
 char *individual_toString(Individual *ind);
 
-void individual_destroy(Individual *ind);
 
 #endif
 

@@ -12,17 +12,18 @@
 #include <string.h>
 
 #include <individual.h>
+#include <RNG.h>
 
 
 
 
-Individual individual_create(RNG *rng, int n_weights){
+Individual individual_create(int n_weights){
   Individual ind;
   int i;
 
   ind.n_weights = n_weights;
   for(i = 0; i < n_weights; i++){
-    ind.weights[i] = getRandomDouble(rng);
+    ind.weights[i] = getRandomDouble();
   }
   ind.fitness = -1;
   ind.string[0] = '\0';
@@ -31,14 +32,21 @@ Individual individual_create(RNG *rng, int n_weights){
 
 }
 
+
 Individual individual_clone(Individual *ind){
+
   Individual copy;
   int i;
 
   copy.n_weights = ind->n_weights;
+  
   for(i = 0; i < ind->n_weights; i++){
     copy.weights[i] = ind->weights[i];
   }
+
+  copy.fitness = -1;
+  copy.string[0] = '\0';
+
 
   return copy;
 }
@@ -123,8 +131,9 @@ void individual_predict_classification(Individual *ind, double **X, int n_sample
 }
 
 char *individual_toString(Individual *ind){
-  char str[100];
+  // The lack of malloc is not giving me a segmentation fault, should it?
   if( strlen(ind->string) == 0){
+    char str[ind->n_weights*10 + 2]; 
     strcat(ind->string, "[");
     for(int i = 0; i < ind->n_weights; i++){
       sprintf(str, "%f, ", ind->weights[i]);
@@ -133,14 +142,11 @@ char *individual_toString(Individual *ind){
     }
     int length = strlen(ind->string);
     ind->string[length-2] = ']';
-    ind->string[length-2] = '\0';
+    ind->string[length-1] = '\0';
   }
   return ind->string;
 }
 
-void individual_destroy(Individual *ind){
-  //TODO
-}
 
 
 
