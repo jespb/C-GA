@@ -17,35 +17,45 @@
 
 
 
-Individual individual_create(int n_weights){
-  Individual ind;
+Individual *individual_create(int n_weights){
+  Individual *ind = malloc(sizeof(Individual));
   int i;
 
-  ind.n_weights = n_weights;
+  ind->n_weights = n_weights;
+  ind->weights = malloc(sizeof(double) * n_weights);
   for(i = 0; i < n_weights; i++){
-    ind.weights[i] = getRandomDouble();
+    ind->weights[i] = getRandomDouble();
   }
-  ind.fitness = -1;
-  ind.string[0] = '\0';
+
+  ind->fitness = -1;
+  ind->string = malloc(sizeof(char));
+  ind->string[0] = '\0';
 
   return ind;
 
 }
 
 
-Individual individual_clone(Individual *ind){
+Individual *individual_clone(Individual *ind, int cloneFitness){
 
-  Individual copy;
+  Individual *copy = malloc(sizeof(Individual));
   int i;
 
-  copy.n_weights = ind->n_weights;
+  copy->n_weights = ind->n_weights;
+  copy->weights = malloc(sizeof(double) * ind->n_weights);
   
   for(i = 0; i < ind->n_weights; i++){
-    copy.weights[i] = ind->weights[i];
+    copy->weights[i] = ind->weights[i];
   }
 
-  copy.fitness = -1;
-  copy.string[0] = '\0';
+  if (cloneFitness){
+    copy->fitness = ind->fitness;
+  }else{
+    copy->fitness = -1;
+  }
+
+  copy->string = malloc(sizeof(char));
+  copy->string[0] = '\0';
 
 
   return copy;
@@ -55,11 +65,13 @@ Individual individual_clone(Individual *ind){
 /*
  * The individuals MUST have calculates the fitness beforehand
  * bigger fitness = better
+ * 
+ * Is there a way to simplify this?
  */
 int compare(const void *a, const void *b) {
-  Individual *this  = (Individual*)((const long int *)a)[0];
-  Individual *other = (Individual*)((const long int *)b)[0];
-  return this->fitness > other->fitness;
+  const Individual *this  = ((Individual*)((const long int*)a)[0]);
+  const Individual *other = ((Individual*)((const long int*)b)[0]);
+  return this->fitness < other->fitness; // Sorts from best to worst
 }
 
 
@@ -81,7 +93,7 @@ double getFitness(Individual *ind, double **training_X, double *training_Y, int 
 
 
 double getAccuracy(Individual *ind, double **X, double *Y, int n_samples){
-  int predictions[ind->n_samples];
+  int *predictions = malloc(sizeof(int) * ind->n_samples);
   int hits, i;
 
   individual_predict_classification(ind, X, n_samples, predictions);
@@ -92,6 +104,8 @@ double getAccuracy(Individual *ind, double **X, double *Y, int n_samples){
       hits ++;
     }
   }
+
+  free(predictions);
 
   return hits/(double)n_samples;
 }
@@ -133,7 +147,11 @@ void individual_predict_classification(Individual *ind, double **X, int n_sample
 char *individual_toString(Individual *ind){
   // The lack of malloc is not giving me a segmentation fault, should it?
   if( strlen(ind->string) == 0){
+    free(ind->string);
+
+    ind->string = malloc(ind->n_weights * 10 +3);
     char str[ind->n_weights*10 + 2]; 
+    ind->string[0] = '\0';
     strcat(ind->string, "[");
     for(int i = 0; i < ind->n_weights; i++){
       sprintf(str, "%f, ", ind->weights[i]);
@@ -145,6 +163,12 @@ char *individual_toString(Individual *ind){
     ind->string[length-1] = '\0';
   }
   return ind->string;
+}
+
+
+void individual_destroy(Individual *ind){
+  free(ind->weights);
+  free(ind->string);
 }
 
 

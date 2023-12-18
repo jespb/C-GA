@@ -123,7 +123,7 @@ double *getDatasetY(double **ds, int n_samples, int n_terminals, int isTraining)
   	maxi = n_samples;
   }
 
-  ret = calloc( maxi-mini, sizeof(double));
+  ret = calloc( maxi-mini +1, sizeof(double));
   for (i = mini; i < maxi; i++) {
     ret[i-mini] = ds[i][n_terminals]; // Target value
   }
@@ -191,12 +191,10 @@ int main(int argc, char *argv[]){
     model =
         ga_create(terminals, n_terminals, POPULATION_SIZE, MAX_GENERATION, ELITISM_SIZE, 
                   THREADS, VERBOSE, Tr_X, Tr_Y, Tr_samples, Te_X, Te_Y, Te_samples, run);
-/*
+
 
     fit(&model);
 
-
-    // GA_destroy(model);
     models[run] = model;
 
     // --------------------------------------------  CLOSE RUN
@@ -213,21 +211,9 @@ int main(int argc, char *argv[]){
 
     printf("RUN %d: MODEL#ID: %f\n", run,
            models[run].testAccuracyOverTime[10]);
-  */
+    
+  
   }
-
-
-  return 0;
-}
-
-/*
-
-
-
-int main(int argc, char *argv[]) {
-
-
-
 
 
 
@@ -326,17 +312,14 @@ int main(int argc, char *argv[]) {
   for (run = 0; run < RUNS; run++) {
     sprintf(buff, "Final_Model,%d,", run);
     fputs(buff, out);
-    ind_str = individual_toString(&models[run].bestIndividual);
+    ind_str = individual_toString(models[run].bestIndividual);
     sprintf(buff, "%s,\n", ind_str);
-    free(ind_str);
     fputs(buff, out);
   }
   fputs("\n", out);
 
   printf("OUTPUT PARAMETERS...\n");
   fputs("\nParameters:\n", out);
-  sprintf(buff, "Operators,['+', '-', '*', '/']\n");
-  fputs(buff, out);
   sprintf(buff, "Population Size,%d\n", POPULATION_SIZE);
   fputs(buff, out);
   sprintf(buff, "Max Generation,%d\n", MAX_GENERATION);
@@ -353,8 +336,11 @@ int main(int argc, char *argv[]) {
 
   string_array_destroy(terminals);
 
+  for(i = 0; i < RUNS; i++){
+    GA_destroy(&models[i]);
+  }
+  
+
   return 0;
 }
-
-*/
 

@@ -109,11 +109,11 @@ int testIndividual(){
 	int results_class[4] = {0,0,1,1}; 
 	double results_class_double[4] = {0,0,1,1}; 
 
-	Individual ind = individual_create(3);
+	Individual ind = *individual_create(3);
 	ind.weights[0] = 1;
 	ind.weights[1] = 2;
 	ind.weights[2] = 3;
-	Individual ind2 = individual_clone(&ind);
+	Individual ind2 = *individual_clone(&ind,1);
 
 	if (strcmp(individual_toString(&ind), "[1.000000, 2.000000, 3.000000]")!=0){
 		printf("(Error at: individual_toString)... ");

@@ -14,17 +14,17 @@ typedef struct{
   double *training_Y;
   int n_samples;
 
-  double weights[1000];
+  double *weights;
   int n_weights;
 
   double fitness;
-  char string[1000*10];
+  char *string;
 } Individual;
 
 
-Individual individual_create(int n_weights);
+Individual *individual_create(int n_weights);
 
-Individual individual_clone(Individual *ind);
+Individual *individual_clone(Individual *ind, int copyFitness);
 
 
 int compare(const void * a, const void * b);
@@ -52,7 +52,7 @@ void individual_predict_regression(Individual *ind, double **X, int n_samples, d
 void individual_predict_classification(Individual *ind, double **X, int n_samples, int predictions[]);
 
 char *individual_toString(Individual *ind);
-
+void individual_destroy(Individual *ind);
 
 #endif
 

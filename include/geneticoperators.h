@@ -12,10 +12,10 @@
 #define _GENETICOPERATORS_H
 
 
-Individual roulette(Individual population[], int p_size);
+Individual *roulette(Individual **population, int p_size);
 
-void getElite(Individual population[], int p_size, Individual elite[], int e_size);
-void getOffspring(Individual population[], int p_size, Individual offspring[] );
+void getElite(Individual **population, int p_size, Individual **elite, int e_size);
+void getOffspring(Individual **population, int p_size, Individual **offspring);
 
 void STXO(Individual *parent1, Individual *parent2 );
 void STMUT(Individual *parent);
